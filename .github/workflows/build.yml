@@ -1,10 +1,10 @@
-
-name: Build
+name: Build CloudStream plugins
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,42 +12,47 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
         with:
           path: src
 
-      - name: Checkout builds
+      - name: Checkout builds branch
         uses: actions/checkout@v4
         with:
+          repository: ${{ github.repository }}
           ref: builds
           path: builds
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '11'
 
-      - name: Setup Android SDK
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '7.4'
+
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Build plugins
-        run: |
-          cd src
-          chmod +x gradlew
-          ./gradlew make makePluginsJson
+        working-directory: src
+        run: gradle make makePluginsJson
 
-      - name: Publish builds
+      - name: Publish plugin files
+        shell: bash
         run: |
-          cp src/*/build/*.cs3 builds/ || true
+          set -e
+          find src -type f -name '*.cs3' -exec cp {} builds/ \;
           cp src/build/plugins.json builds/plugins.json
           cd builds
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "Update plugin builds" || true
+          git commit -m "Build plugins from ${{ github.sha }}" || echo "No changes to publish"
           git push
