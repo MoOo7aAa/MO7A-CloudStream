@@ -39,7 +39,7 @@ jobs:
 
       - name: Build plugins
         working-directory: src
-        run: gradle make makePluginsJson
+        run: gradle make makePluginsJson --stacktrace --info
 
       - name: Publish plugin files
         shell: bash
