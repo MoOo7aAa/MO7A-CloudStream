@@ -1,0 +1,53 @@
+
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          path: src
+
+      - name: Checkout builds
+        uses: actions/checkout@v4
+        with:
+          ref: builds
+          path: builds
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build plugins
+        run: |
+          cd src
+          chmod +x gradlew
+          ./gradlew make makePluginsJson
+
+      - name: Publish builds
+        run: |
+          cp src/*/build/*.cs3 builds/ || true
+          cp src/build/plugins.json builds/plugins.json
+          cd builds
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Update plugin builds" || true
+          git push
