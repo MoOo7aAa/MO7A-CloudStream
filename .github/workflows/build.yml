@@ -37,9 +37,6 @@ jobs:
         with:
           gradle-version: '7.4'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Build plugins
         working-directory: src
         run: gradle make makePluginsJson
