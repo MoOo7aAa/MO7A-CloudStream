@@ -1,0 +1,8 @@
+{
+  "name": "MO7A",
+  "description": "Personal CloudStream repository maintained by MO7A",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/MoOo7aAa/MO7A-CloudStream/builds/plugins.json"
+  ]
+}
